@@ -88,6 +88,15 @@
     });
   }
 
+  /* ---------- Contact form: opens the visitor's email app with the message filled in ---------- */
+  document.querySelectorAll('[data-mailto-form]').forEach(form => form.addEventListener('submit', e => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const subject = `[Skakaonice] ${f.get('tema')} – ${f.get('ime')}`;
+    const body = `${f.get('poruka')}\n\n${f.get('ime')}\n${f.get('email')}`;
+    window.location.href = `mailto:${form.dataset.mailtoForm}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }));
+
   /* ---------- Placeholder buttons ("Prijave uskoro") ---------- */
   document.querySelectorAll('[aria-disabled="true"]').forEach(b => b.addEventListener('click', e => e.preventDefault()));
 

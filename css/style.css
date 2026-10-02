@@ -137,13 +137,13 @@ h3, .h3 { font-size: var(--h3); }
   width: 64px; height: 38px; border-radius: 50%; border: 1.5px solid currentColor;
   background: transparent; cursor: pointer; display: grid; place-items: center; padding: 0;
 }
-.menu-toggle span { display: block; width: 26px; height: 2px; background: currentColor; position: relative; transition: transform .3s, background .3s; }
-.menu-toggle span::before, .menu-toggle span::after { content: ""; position: absolute; left: 0; width: 100%; height: 2px; background: currentColor; transition: transform .3s, top .3s; }
-.menu-toggle span::before { top: -7px; }
-.menu-toggle span::after { top: 7px; }
-.menu-open .menu-toggle span { background: transparent; }
-.menu-open .menu-toggle span::before { top: 0; transform: rotate(45deg); }
-.menu-open .menu-toggle span::after { top: 0; transform: rotate(-45deg); }
+.menu-toggle .bars { display: block; width: 26px; height: 2px; background: currentColor; position: relative; transition: transform .3s, background .3s; }
+.menu-toggle .bars::before, .menu-toggle .bars::after { content: ""; position: absolute; left: 0; width: 100%; height: 2px; background: currentColor; transition: transform .3s, top .3s; }
+.menu-toggle .bars::before { top: -7px; }
+.menu-toggle .bars::after { top: 7px; }
+.menu-open .menu-toggle .bars { background: transparent; }
+.menu-open .menu-toggle .bars::before { top: 0; transform: rotate(45deg); }
+.menu-open .menu-toggle .bars::after { top: 0; transform: rotate(-45deg); }
 .nav-cta { justify-self: end; }
 @media (max-width: 640px) {
   .nav-inner { grid-template-columns: 1fr auto; height: 72px; }

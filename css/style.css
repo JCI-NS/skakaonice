@@ -101,7 +101,7 @@ h3, .h3 { font-size: var(--h3); }
 .sticker.turq { background: var(--turq); }
 
 /* SplitText line masks clip overflow; pad them so diacritics (Č Ć Š Ž) are not cut off */
-.split-line-mask { padding-top: .16em; margin-top: -.16em; padding-bottom: .08em; margin-bottom: -.08em; }
+[data-split] > div { padding-top: .22em; margin-top: -.22em; padding-bottom: .1em; margin-bottom: -.1em; }
 
 /* ---------- Buttons: arrow tile + pill label ---------- */
 .btn {
@@ -413,6 +413,7 @@ h3, .h3 { font-size: var(--h3); }
 /* =====================================================================
    Inner pages
    ===================================================================== */
+.page-hero .heading { margin-top: 44px; }
 .page-hero .crumb { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--turq); margin-bottom: 22px; }
 .page-hero .btn-row { margin-top: 36px; }
 .section.tight { padding-block: clamp(56px, 4rem + 2vw, 110px); }

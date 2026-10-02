@@ -97,6 +97,37 @@
     window.location.href = `mailto:${form.dataset.mailtoForm}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }));
 
+  /* ---------- Stickers: rest on the top edge of the headline's capital letters ----------
+     The cap-letter top is computed from the font's real metrics, so the overlap is the same
+     for every headline size and screen width. */
+  const measureCtx = document.createElement('canvas').getContext('2d');
+  // Overlap = the smaller of 38% of the sticker or 16% of the capital-letter height,
+  // so small (mobile) headlines are only grazed, not covered.
+  const STICKER_OVERLAP = 0.38, CAP_OVERLAP = 0.16;
+  const placeStickers = () => {
+    document.querySelectorAll('.sticker').forEach(s => {
+      const host = s.offsetParent;
+      const h = s.parentElement.querySelector('h1, h2, h3, .display');
+      if (!host || !h) return;
+      const cs = getComputedStyle(h);
+      const fs = parseFloat(cs.fontSize);
+      const lh = cs.lineHeight === 'normal' ? fs * 1.2 : parseFloat(cs.lineHeight);
+      measureCtx.font = `${cs.fontWeight} ${fs}px ${cs.fontFamily}`;
+      const m = measureCtx.measureText('H');
+      const ascent = m.fontBoundingBoxAscent ?? fs * .97;
+      const descent = m.fontBoundingBoxDescent ?? fs * .25;
+      const halfLeading = (lh - (ascent + descent)) / 2;
+      const capTopInLine = halfLeading + ascent - m.actualBoundingBoxAscent;
+      const hTop = h.getBoundingClientRect().top - host.getBoundingClientRect().top + parseFloat(cs.paddingTop);
+      const overlap = Math.min(s.offsetHeight * STICKER_OVERLAP, m.actualBoundingBoxAscent * CAP_OVERLAP);
+      s.style.top = `${hTop + capTopInLine - s.offsetHeight + overlap}px`;
+    });
+  };
+  placeStickers();
+  (document.fonts?.ready || Promise.resolve()).then(placeStickers);
+  let stickerTimer;
+  window.addEventListener('resize', () => { clearTimeout(stickerTimer); stickerTimer = setTimeout(placeStickers, 120); });
+
   /* ---------- Placeholder buttons ("Prijave uskoro") ---------- */
   document.querySelectorAll('[aria-disabled="true"]').forEach(b => b.addEventListener('click', e => e.preventDefault()));
 

@@ -73,7 +73,9 @@ h3, .h3 { font-size: var(--h3); }
 .accent-y { color: var(--yellow); }
 .accent-t { color: var(--turq); }
 
-/* Section heading with a tilted sticker, centered like the reference */
+/* Section heading with a tilted sticker. Vertical position is set by JS (placeStickers in main.js)
+   so the sticker always rests on the top edge of the first line with a slight overlap.
+   The CSS top below is only the no-JS fallback. */
 .heading { position: relative; display: inline-block; }
 .heading-wrap { margin-bottom: clamp(40px, 5vw, 72px); }
 .heading-wrap.center { display: flex; justify-content: center; }
@@ -81,8 +83,8 @@ h3, .h3 { font-size: var(--h3); }
 .sticker {
   position: absolute;
   left: 50%;
-  top: -.6em;
-  transform: translate(-50%, -40%) rotate(-12deg);
+  top: -1.6em;
+  transform: translateX(-50%) rotate(-12deg);
   background: var(--yellow);
   color: var(--navy);
   font-family: var(--font-body);
@@ -97,7 +99,7 @@ h3, .h3 { font-size: var(--h3); }
   box-shadow: 0 6px 18px rgba(10, 15, 41, .18);
   z-index: 6;
 }
-.sticker.left { left: 0; transform: translate(-6%, -40%) rotate(-12deg); }
+.sticker.left { left: 0; transform: translateX(-6%) rotate(-12deg); }
 .sticker.turq { background: var(--turq); }
 
 /* SplitText line masks clip overflow; pad them so diacritics (Č Ć Š Ž) are not cut off */
@@ -183,7 +185,7 @@ h3, .h3 { font-size: var(--h3); }
 .hero-head { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 24px 48px; }
 .hero-title { position: relative; }
 .hero-title h1 { font-size: clamp(2.5rem, .6rem + 6.6vw, 7.4rem); max-width: 13.5ch; }
-.hero-title .sticker { left: 0; top: 0; transform: translate(-4%, -55%) rotate(-12deg); }
+.hero-title .sticker { left: 0; transform: translateX(-4%) rotate(-12deg); }
 .hero-meta { display: grid; gap: 10px; padding-top: 1.2em; font-weight: 600; font-size: 15px; }
 @media (max-width: 900px) { .hero-head { grid-template-columns: 1fr; } .hero-meta { padding-top: 0; } }
 .hero-meta div { display: flex; align-items: center; gap: 10px; }
@@ -306,7 +308,7 @@ h3, .h3 { font-size: var(--h3); }
 .split { display: grid; grid-template-columns: 5fr 7fr; gap: clamp(32px, 6vw, 96px); align-items: start; }
 .split-side { position: sticky; top: 120px; }
 .split-side .heading { margin-bottom: 28px; }
-.split-side .sticker { left: 0; transform: translate(-6%, -50%) rotate(-12deg); }
+.split-side .sticker { left: 0; transform: translateX(-6%) rotate(-12deg); }
 .split-img { margin-top: 40px; border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 3; }
 .split-img img { width: 100%; height: 100%; object-fit: cover; }
 @media (max-width: 900px) { .split { grid-template-columns: 1fr; } .split-side { position: static; } }
@@ -388,7 +390,6 @@ h3, .h3 { font-size: var(--h3); }
 /* ---------- Page hero (inner pages) ---------- */
 .page-hero { background: var(--navy); color: var(--white); padding-top: clamp(150px, 15vw, 230px); padding-bottom: clamp(64px, 7vw, 110px); position: relative; overflow: hidden; }
 .page-hero h1 { max-width: 14ch; position: relative; }
-.page-hero h1 .sticker { left: 0; transform: translate(-4%, -60%) rotate(-12deg); }
 .page-hero .lead { margin-top: 28px; color: #c9cde0; }
 .page-hero .arrow-deco { position: absolute; right: -2%; bottom: -8%; width: clamp(220px, 34vw, 520px); color: var(--turq); opacity: .9; }
 
@@ -413,7 +414,6 @@ h3, .h3 { font-size: var(--h3); }
 /* =====================================================================
    Inner pages
    ===================================================================== */
-.page-hero .heading { margin-top: 44px; }
 .page-hero .crumb { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--turq); margin-bottom: 22px; }
 .page-hero .btn-row { margin-top: 36px; }
 .section.tight { padding-block: clamp(56px, 4rem + 2vw, 110px); }

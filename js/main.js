@@ -89,13 +89,20 @@
   }
 
   /* ---------- Contact form: opens the visitor's email app with the message filled in ---------- */
-  document.querySelectorAll('[data-mailto-form]').forEach(form => form.addEventListener('submit', e => {
-    e.preventDefault();
-    const f = new FormData(form);
-    const subject = `[Skakaonice] ${f.get('tema')} – ${f.get('ime')}`;
-    const body = `${f.get('poruka')}\n\n${f.get('ime')}\n${f.get('email')}`;
-    window.location.href = `mailto:${form.dataset.mailtoForm}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  }));
+  // A topic option can send to its own address (data-to); ?tema=<data-key> preselects a topic.
+  document.querySelectorAll('[data-mailto-form]').forEach(form => {
+    const key = new URLSearchParams(location.search).get('tema');
+    const preset = key && form.querySelector(`option[data-key="${CSS.escape(key)}"]`);
+    if (preset) preset.selected = true;
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const f = new FormData(form);
+      const to = form.querySelector('select[name="tema"]')?.selectedOptions[0]?.dataset.to || form.dataset.mailtoForm;
+      const subject = `[Skakaonice] ${f.get('tema')} – ${f.get('ime')}`;
+      const body = `${f.get('poruka')}\n\n${f.get('ime')}\n${f.get('email')}`;
+      window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    });
+  });
 
   /* ---------- Stickers: rest on the top edge of the headline's capital letters ----------
      The cap-letter top is computed from the font's real metrics, so the overlap is the same

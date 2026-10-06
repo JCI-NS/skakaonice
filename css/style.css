@@ -218,6 +218,11 @@ h3, .h3 { font-size: var(--h3); }
 @media (max-width: 900px) { .stats { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 520px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 
+.hero-intro { display: grid; grid-template-columns: 7fr 5fr; gap: 16px clamp(32px, 5vw, 80px); align-items: end; margin-top: clamp(32px, 3.5vw, 56px); }
+.hero-intro p { margin: 0; color: #c9cde0; font-size: var(--text-lg); line-height: 1.55; }
+.hero-intro .hero-intro-lead { font-family: var(--font-display); font-weight: 800; color: var(--white); font-size: clamp(1.4rem, 1rem + 1.4vw, 2.3rem); line-height: 1.15; letter-spacing: -.01em; }
+@media (max-width: 900px) { .hero-intro { grid-template-columns: 1fr; } }
+
 /* ---------- Scroll-fill statement with floating photos ---------- */
 .statement { position: relative; text-align: center; padding-block: clamp(120px, 14vw, 240px); overflow: hidden; }
 .statement .sticker { left: 34%; }
@@ -302,6 +307,8 @@ h3, .h3 { font-size: var(--h3); }
 .ticket.featured .ticket-top { background: var(--yellow); color: var(--navy); }
 .ticket.featured .ticket-desc, .ticket.featured .ticket-price small { color: var(--navy-3); }
 .ticket.featured .ticket-kicker { color: var(--navy); }
+.ticket-body { margin: 24px 4px 28px; font-size: 15px; line-height: 1.6; color: #dfe2ef; }
+.tickets-intro { margin: -12px auto 36px; font-weight: 700; font-size: var(--text-lg); }
 @media (max-width: 900px) { .tickets { grid-template-columns: 1fr; max-width: 520px; margin-inline: auto; } }
 
 /* ---------- Split layout (agenda, FAQ) ---------- */
@@ -341,6 +348,13 @@ h3, .h3 { font-size: var(--h3); }
 .tabs { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 36px; }
 .tab { background: none; border: 0; padding: 0 0 4px; cursor: pointer; font-weight: 700; font-size: 15px; color: var(--muted); border-bottom: 2px solid transparent; }
 .tab[aria-selected="true"] { color: var(--ink); border-color: var(--ink); }
+
+/* Agenda day switch (homepage) */
+.day-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; margin-bottom: 36px; background: #f3f4f8; border-radius: 999px; }
+.day-tab { border: 0; border-radius: 999px; padding: 12px 18px; cursor: pointer; background: none; color: var(--ink); font: 700 15px/1.2 var(--font-body); transition: background .25s, color .25s; }
+.day-tab span { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--turq); margin-bottom: 2px; }
+.day-tab[aria-selected="true"] { background: var(--navy); color: var(--white); }
+.day-tab:not([aria-selected="true"]):hover { background: #e6e8f0; }
 .faq-list { border-top: 1px solid var(--line); }
 .faq-panel[hidden] { display: none; }
 .faq { border-bottom: 1px solid var(--line); }
@@ -390,6 +404,7 @@ h3, .h3 { font-size: var(--h3); }
 /* ---------- Page hero (inner pages) ---------- */
 .page-hero { background: var(--navy); color: var(--white); padding-top: clamp(150px, 15vw, 230px); padding-bottom: clamp(64px, 7vw, 110px); position: relative; overflow: hidden; }
 .page-hero h1 { max-width: 14ch; position: relative; }
+.page-hero h1.h1-long { font-size: clamp(2.2rem, .9rem + 4.4vw, 5.6rem); max-width: 20ch; }
 .page-hero .lead { margin-top: 28px; color: #c9cde0; }
 .page-hero .arrow-deco { position: absolute; right: -2%; bottom: -8%; width: clamp(220px, 34vw, 520px); color: var(--turq); opacity: .9; }
 
@@ -558,3 +573,6 @@ h3, .h3 { font-size: var(--h3); }
 .logo-card.lg { width: 260px; height: 150px; }
 .logo-card.lg img { max-height: 76px; max-width: 200px; }
 @media (max-width: 520px) { .logo-card { width: calc(50% - 7px); height: 112px; } .logo-card.lg { width: 100%; } .logo-card img { max-width: 100%; max-height: 46px; } }
+
+/* Podrži: closing line under the value cards */
+.support-close { max-width: 46ch; margin: clamp(40px, 4vw, 64px) auto 0; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: var(--h4); line-height: 1.3; }

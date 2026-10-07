@@ -227,7 +227,6 @@ h3, .h3 { font-size: var(--h3); }
 
 /* ---------- Scroll-fill statement with floating photos ---------- */
 .statement { position: relative; text-align: center; padding-block: clamp(120px, 14vw, 240px); overflow: hidden; }
-.statement .sticker { left: 22%; }
 .statement .fill-text { position: relative; z-index: 2; max-width: 22ch; margin-inline: auto; font-size: clamp(2rem, 1rem + 3.6vw, 4.4rem); line-height: 1.04; }
 .statement .btn-row { justify-content: center; margin-top: 44px; position: relative; z-index: 2; }
 .floaters { position: absolute; inset: 0; pointer-events: none; z-index: 1; }

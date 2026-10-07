@@ -54,7 +54,12 @@
   const WAVE = [[2.5,76],[5.5,62],[11,56],[18,56],[25,56],[30,60],[34,63],[38,66],[42,68.5],[47.5,68.5],[66,68.5],[80,40],[92,9]];
   const CALM = WAVE.map(([x, y]) => [x, 50 + (y - 50) * 0.4]);
   // Stroke width in shape units: the resting arrow is a bit heavier and thins into the logo line
-  const SW_REST = 9.5, SW_LOGO = 6.5;
+  const SW_REST = 8, SW_LOGO = 6;
+  // Short resting shapes, about the size of the arrow on the live buttons today
+  const shrink = (P, sx, sy, cx = 46, cy = 42) => P.map(([x, y]) => [cx + (x - 47) * sx, cy + (y - 42) * sy]);
+  const SHORT_STRAIGHT = line(24, 42, 68, 42);
+  const SHORT_WAVE = shrink(WAVE, .5, .3);
+  const SHORT_RISE = line(24, 50, 68, 34).map(([x, y], i) => [x, y + Math.sin(i / 12 * Math.PI) * 4]);
   // Brand arrowhead (the notched chevron), in stroke-width units, pointing +x, shaft end at origin
   const HEAD = [[2,0],[0.35,1.67],[-1.1,1.67],[0.05,0.5],[0.05,-0.5],[-1.1,-1.67],[0.35,-1.67]];
 
@@ -108,37 +113,16 @@
   };
 
   // ---- The variants: each maps hover progress p (0 = rest, 1 = hovered) to a frame ----
+  // Lengthen + bend: the short arrow grows into the full logo arrow and settles slightly up-right
+  const grow = (from, ms) => ({
+    ms,
+    frame: (svg, p) => { const t = out(p); render(svg, mix(from, WAVE, t), swAt(t), `translate(${t * 3} ${-t * 3})`); },
+  });
   const VARIANTS = [
-    {
-      name: 'Savijanje',
-      text: 'Kao prva varijanta, ali čisto: strelica se savije u talas iz logotipa i stane, bez odskakanja. Kraće traje, a linija se tokom savijanja stanji do debljine iz logotipa.',
-      ms: 360,
-      frame: (svg, p) => { const t = out(p); render(svg, mix(STRAIGHT, WAVE, t), swAt(t)); },
-    },
-    {
-      name: 'Talas ka vrhu',
-      text: 'Ono što ti se svidelo u drugoj varijanti, bez strelice koja odlazi: postojeća strelica se savija od početka linije ka vrhu, pa talas „proteče“ kroz nju i vrh se poslednji podigne.',
-      ms: 420,
-      frame: (svg, p) => render(svg, flow(STRAIGHT, WAVE, p, 1), swAt(out(p))),
-    },
-    {
-      name: 'Vrh vodi',
-      text: 'Obrnuto od prethodne: prvo se vrh podigne gore-desno, a linija ga prati i savije se u talas.',
-      ms: 420,
-      frame: (svg, p) => render(svg, flow(STRAIGHT, WAVE, p, -1), swAt(out(p))),
-    },
-    {
-      name: 'Logo uvek',
-      text: 'Strelica je stalno blagi talas iz logotipa. Na prelaz mišem talas se izdigne i strelica se pomeri gore-desno, pa stane. Bez vraćanja na kraju.',
-      ms: 320,
-      frame: (svg, p) => { const t = out(p); render(svg, mix(CALM, WAVE, t), swAt(.5 + t / 2), `translate(${t * 4} ${-t * 4})`); },
-    },
-    {
-      name: 'Logo uvek + talas ka vrhu',
-      text: 'Spoj četvrte i druge: u mirovanju blagi talas, a na prelaz mišem talas proteče od početka linije ka vrhu.',
-      ms: 380,
-      frame: (svg, p) => render(svg, flow(CALM, WAVE, p, 1), swAt(.5 + out(p) / 2)),
-    },
+    { name: 'Trenutna strelica (za poređenje)', text: 'Ovako dugmad izgledaju danas na sajtu.', current: true },
+    { name: 'Kratka prava → logo', text: 'U mirovanju kratka prava strelica, iste veličine kao današnja, ali sa vrhom iz brenda. Na prelaz mišem se izduži i savije u strelicu iz logotipa.', ...grow(SHORT_STRAIGHT, 340) },
+    { name: 'Kratki talas → logo', text: 'U mirovanju umanjena strelica iz logotipa sa blagim talasom, iste veličine kao današnja. Na prelaz mišem se izduži i talas se izdigne do punog logotipa.', ...grow(SHORT_WAVE, 340) },
+    { name: 'Kratka uzlazna → logo', text: 'U mirovanju kratka strelica koja se blago penje udesno, kao kraj strelice iz logotipa. Na prelaz mišem se izduži i dobije ceo talas.', ...grow(SHORT_RISE, 340) },
   ];
 
   // Reversible tween: hover in plays forward, hover out plays back from wherever it is
@@ -154,6 +138,7 @@
     return t => { target = t; if (!raf) raf = requestAnimationFrame(tick); };
   };
 
+  const CURRENT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   const BTNS = [['', 'Prijavi se'], ['white', 'Postani partner'], ['navy', 'Saznaj više']];
   const root = document.getElementById('variants');
   const all = [];
@@ -169,6 +154,10 @@
       const a = document.createElement('a');
       a.className = `btn ${cls}`; a.href = '#'; a.onclick = e => e.preventDefault();
       a.innerHTML = `<span class="btn-icon"></span><span class="btn-label">${label}</span>`;
+      if (v.current) {
+        a.querySelector('.btn-icon').innerHTML = CURRENT;
+        panel.append(a); return;
+      }
       const svg = makeSvg('ba');
       a.querySelector('.btn-icon').append(svg);
       const go = animator(p => v.frame(svg, p), v.ms);
@@ -180,6 +169,7 @@
     BTNS.forEach(([c, l]) => addBtn(light, c, l));
     BTNS.forEach(([c, l]) => addBtn(dark, c === 'navy' ? 'turq' : c, c === 'navy' ? 'Saznaj više' : l));
     // Big version to judge the shape itself
+    if (v.current) { sec.querySelectorAll('.rows')[1].remove(); root.append(sec); return; }
     [bigL, bigD].forEach(panel => {
       const svg = makeSvg('big-icon');
       panel.append(svg);

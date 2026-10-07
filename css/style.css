@@ -582,3 +582,9 @@ h3, .h3 { font-size: var(--h3); }
 
 /* Podrži: closing line under the value cards */
 .support-close { max-width: 46ch; margin: clamp(40px, 4vw, 64px) auto 0; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: var(--h4); line-height: 1.3; }
+
+/* Contact form: spam trap and send states */
+.form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.form .form-status.ok { color: var(--teal, #56bda3); }
+.form .form-status.err { color: var(--yellow, #edbe38); }
+.form button[disabled] { opacity: .6; cursor: progress; }

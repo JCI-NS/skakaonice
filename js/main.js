@@ -146,19 +146,46 @@
     });
   }
 
-  /* ---------- Contact form: opens the visitor's email app with the message filled in ---------- */
-  // A topic option can send to its own address (data-to); ?tema=<data-key> preselects a topic.
-  document.querySelectorAll('[data-mailto-form]').forEach(form => {
+  /* ---------- Contact form: sends straight to our inbox through FormSubmit (formsubmit.co) ----------
+     A topic option can send to its own address (data-to); ?tema=<data-key> preselects a topic.
+     Each address is activated once: the first send emails an "Activate Form" link to that inbox. */
+  document.querySelectorAll('[data-contact-form]').forEach(form => {
     const key = new URLSearchParams(location.search).get('tema');
     const preset = key && form.querySelector(`option[data-key="${CSS.escape(key)}"]`);
     if (preset) preset.selected = true;
-    form.addEventListener('submit', e => {
+    const status = form.querySelector('.form-status');
+    const button = form.querySelector('button[type="submit"]');
+    const setStatus = (text, cls = '') => { status.textContent = text; status.className = `note form-status ${cls}`; };
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       const f = new FormData(form);
-      const to = form.querySelector('select[name="tema"]')?.selectedOptions[0]?.dataset.to || form.dataset.mailtoForm;
-      const subject = `[Skakaonice] ${f.get('tema')} – ${f.get('ime')}`;
-      const body = `${f.get('poruka')}\n\n${f.get('ime')}\n${f.get('email')}`;
-      window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      if (f.get('_honey')) return; // filled only by spam bots
+      const to = form.querySelector('select[name="tema"]')?.selectedOptions[0]?.dataset.to || form.dataset.contactForm;
+      button.disabled = true;
+      setStatus('Šaljem…');
+      try {
+        const res = await fetch(`https://formsubmit.co/ajax/${to}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            'Ime i prezime': f.get('ime'),
+            email: f.get('email'),
+            Tema: f.get('tema'),
+            Poruka: f.get('poruka'),
+            _subject: `[Skakaonice] ${f.get('tema')} – ${f.get('ime')}`,
+            _template: 'table',
+            _captcha: 'false'
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || String(data.success) !== 'true') throw new Error(data.message || res.status);
+        form.reset();
+        setStatus('Hvala! Poruka je poslata, javljamo se uskoro.', 'ok');
+      } catch {
+        setStatus(`Poruka nije poslata. Pokušaj ponovo ili piši direktno na ${to}.`, 'err');
+      } finally {
+        button.disabled = false;
+      }
     });
   });
 

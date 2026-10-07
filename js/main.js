@@ -20,6 +20,50 @@
   menu?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
 
+  /* ---------- Brand arrows on buttons ----------
+     At rest the arrow is the first part of the logo line (it rises and turns right). On hover the
+     head travels along the rest of the logo line while the view pulls back to the full logo arrow.
+     The HTML already holds the resting frame, so nothing jumps before this script runs. */
+  const WAVE = 'M2.5 76C5.5 62 11 56 18 56C25 56 30 60 34 63C38 66 42 68.5 47.5 68.5C66 68.5 80 40 92 9';
+  const ARROW_HEAD = [[2, 0], [.35, 1.67], [-1.1, 1.67], [.05, .5], [.05, -.5], [-1.1, -1.67], [.35, -1.67]]; // in stroke widths
+  const REST_DRAWN = .2, REST_SCALE = 1.7, REST_SHIFT = [22.8, -66.7], SW_REST = 8, SW_LOGO = 6, ARROW_MS = 420;
+  const lerp = (a, b, t) => a + (b - a) * t;
+  document.querySelectorAll('.btn svg.ba').forEach(svg => {
+    const g = svg.querySelector('g'), path = g.querySelector('path'), head = g.querySelector('polygon');
+    path.setAttribute('d', WAVE);
+    const total = path.getTotalLength();
+    const draw = p => {
+      // The view pulls back faster than the head travels, so the head never leaves the tile
+      const z = 1 - Math.pow(1 - p, 5), d = 1 - Math.pow(1 - p, 2), sc = lerp(REST_SCALE, 1, z);
+      const sw = lerp(SW_REST, SW_LOGO, z) / sc, len = total * lerp(REST_DRAWN, 1, d);
+      g.setAttribute('transform', `translate(${lerp(REST_SHIFT[0], 0, z)} ${lerp(REST_SHIFT[1], 0, z)}) scale(${sc})`);
+      path.setAttribute('stroke-width', sw);
+      path.style.strokeDasharray = `${len} ${total}`;
+      const tip = path.getPointAtLength(len), back = path.getPointAtLength(Math.max(0, len - 1));
+      const ang = Math.atan2(tip.y - back.y, tip.x - back.x), c = Math.cos(ang), s = Math.sin(ang);
+      head.setAttribute('points', ARROW_HEAD.map(([u, v]) =>
+        `${(tip.x + (u * c - v * s) * sw).toFixed(2)},${(tip.y + (u * s + v * c) * sw).toFixed(2)}`).join(' '));
+    };
+    // Reversible tween: hovering plays forward, leaving plays back from wherever it is
+    let p = 0, target = 0, last = 0, raf = 0;
+    const tick = now => {
+      const dt = last ? now - last : 16; last = now;
+      p = target > p ? Math.min(target, p + dt / ARROW_MS) : Math.max(target, p - dt / ARROW_MS);
+      draw(p);
+      if (p !== target) raf = requestAnimationFrame(tick); else { raf = 0; last = 0; }
+    };
+    const go = t => {
+      if (reduceMotion) { p = target = t; draw(p); return; }
+      target = t; if (!raf) raf = requestAnimationFrame(tick);
+    };
+    draw(0);
+    const btn = svg.closest('.btn');
+    btn.addEventListener('mouseenter', () => go(1));
+    btn.addEventListener('mouseleave', () => go(0));
+    btn.addEventListener('focus', () => go(1));
+    btn.addEventListener('blur', () => go(0));
+  });
+
   /* ---------- Nav background + hide on scroll down ---------- */
   const nav = document.querySelector('.nav');
   let lastY = 0;

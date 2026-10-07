@@ -115,8 +115,10 @@ h3, .h3 { font-size: var(--h3); }
 .btn .btn-icon, .btn .btn-label { background: var(--bg); color: var(--fg); display: grid; place-items: center; border-radius: 10px; transition: transform .35s cubic-bezier(.2,.8,.2,1), background .25s; }
 .btn .btn-icon { width: 48px; height: 48px; overflow: hidden; position: relative; }
 .btn .btn-icon svg { width: 18px; height: 18px; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+/* Brand arrow (the Skakaonice logo line): animated in main.js, so no CSS transform on hover */
+.btn .btn-icon svg.ba { width: 30px; height: 27px; overflow: visible; transition: none; }
 .btn .btn-label { padding: 0 24px; min-height: 48px; border-radius: 10px 999px 999px 10px; }
-.btn:hover .btn-icon svg { transform: translateX(3px) rotate(-45deg); }
+.btn:hover .btn-icon svg:not(.ba) { transform: translateX(3px) rotate(-45deg); }
 .btn:hover .btn-label { transform: translateX(3px); }
 .btn.white { --bg: var(--white); --fg: var(--navy); }
 .btn.navy { --bg: var(--navy); --fg: var(--white); }

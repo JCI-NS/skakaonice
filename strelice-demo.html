@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Strelice · probna stranica</title>
+  <link rel="icon" href="assets/logo/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=8">
+  <style>
+    body { background: var(--white); }
+    .demo-head { background: var(--navy); color: var(--white); padding: 56px 0 40px; }
+    .demo-head h1 { font-size: var(--h3); max-width: none; }
+    .demo-head p { color: #c9cde0; max-width: 62ch; margin: 14px 0 0; }
+    .demo-head label { display: inline-flex; gap: 10px; align-items: center; margin-top: 22px; font-weight: 700; cursor: pointer; }
+    .demo-head input { width: 20px; height: 20px; accent-color: var(--yellow); }
+    .variant { padding: 48px 0; border-bottom: 1px solid var(--line); }
+    .variant h2 { font-size: var(--h4); max-width: none; display: flex; gap: 14px; align-items: baseline; }
+    .variant h2 .n { color: var(--turq); }
+    .variant p { margin: 8px 0 26px; max-width: 64ch; color: #4a5175; }
+    .rows { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .panel { border-radius: var(--radius); padding: 28px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .panel.light { background: #f3f4f8; }
+    .panel.dark { background: var(--navy); }
+    .panel.big { justify-content: center; }
+    .big-icon { width: 220px; height: 196px; color: var(--turq); }
+    @media (max-width: 860px) { .rows { grid-template-columns: 1fr; } }
+    /* Brand arrow inside the button tile */
+    .btn .btn-icon svg.ba { width: 30px; height: 27px; overflow: visible; transition: none; }
+    .btn:hover .btn-icon svg.ba { transform: none; }
+  </style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="container">
+    <h1>Strelice iz brenda: probne varijante</h1>
+    <p>Pređi mišem preko dugmeta da vidiš animaciju. Na telefonu dodirni dugme ili uključi automatsko puštanje. Ova stranica nije povezana sa ostatkom sajta i obrisaćemo je kad izaberemo varijantu.</p>
+    <label><input type="checkbox" id="autoplay"> Puštaj animacije automatski</label>
+  </div>
+</header>
+
+<main class="container" id="variants"></main>
+
+<script>
+(() => {
+  // ---- Shapes, in a 100-unit space traced from the brand submark (logo/submark-color.png) ----
+  // Every shape is 4 cubic segments = 13 points, so any two can be morphed into each other.
+  const line = (x0, y0, x1, y1) => Array.from({ length: 13 }, (_, i) => [x0 + (x1 - x0) * i / 12, y0 + (y1 - y0) * i / 12]);
+  const STRAIGHT = line(10, 42, 76, 42);
+  const WAVE = [[2.5,76],[5.5,62],[11,56],[18,56],[25,56],[30,60],[34,63],[38,66],[42,68.5],[47.5,68.5],[66,68.5],[80,40],[92,9]];
+  const CALM = WAVE.map(([x, y]) => [x, 50 + (y - 50) * 0.4]);
+  const RAMP = [[4,20],[14,40],[24,62],[40,68],[52,72],[60,72],[66,70],[72,68],[76,64],[80,56],[84,48],[88,30],[92,9]];
+  const SW = 7; // stroke width in shape units
+  // Brand arrowhead (the notched chevron), in stroke-width units, pointing +x, shaft end at origin
+  const HEAD = [[2,0],[0.35,1.67],[-1.1,1.67],[0.05,0.5],[0.05,-0.5],[-1.1,-1.67],[0.35,-1.67]];
+
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const mix = (A, B, t) => A.map((p, i) => [lerp(p[0], B[i][0], t), lerp(p[1], B[i][1], t)]);
+  const toD = P => `M${P[0]} C${P.slice(1).map(p => p.join(' ')).join(' ')}`;
+  const headPts = (x, y, ang) => HEAD.map(([u, v]) => {
+    const c = Math.cos(ang), s = Math.sin(ang);
+    return `${(x + (u * c - v * s) * SW).toFixed(2)},${(y + (u * s + v * c) * SW).toFixed(2)}`;
+  }).join(' ');
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const back = t => { const c = 1.6; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+  const seg = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const makeSvg = cls => {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '-8 -14 116 102');
+    svg.setAttribute('class', cls);
+    svg.innerHTML = `<g><path fill="none" stroke="currentColor" stroke-width="${SW}" stroke-linecap="round"/><polygon fill="currentColor"/></g>`;
+    return svg;
+  };
+
+  // Draws the arrow: shape P, optional drawn fraction (0..1) for the "draw on" effect
+  const render = (svg, P, drawn = 1, gTransform = '', opacity = 1) => {
+    const g = svg.querySelector('g'), path = g.querySelector('path'), head = g.querySelector('polygon');
+    path.setAttribute('d', toD(P));
+    g.setAttribute('transform', gTransform);
+    g.style.opacity = opacity;
+    if (drawn >= 1) {
+      path.style.strokeDasharray = ''; path.style.strokeDashoffset = '';
+      const a = P[11], b = P[12];
+      head.setAttribute('points', headPts(b[0], b[1], Math.atan2(b[1] - a[1], b[0] - a[0])));
+      head.style.opacity = 1;
+    } else {
+      const L = path.getTotalLength(), l = L * drawn;
+      path.style.strokeDasharray = `${l} ${L}`; path.style.strokeDashoffset = 0;
+      const p = path.getPointAtLength(l), q = path.getPointAtLength(Math.max(0, l - 1));
+      head.setAttribute('points', headPts(p.x, p.y, Math.atan2(p.y - q.y, p.x - q.x)));
+      head.style.opacity = drawn > 0.02 ? 1 : 0;
+    }
+  };
+
+  // ---- The variants: each maps hover progress p (0 = rest, 1 = hovered) to a frame ----
+  const VARIANTS = [
+    {
+      name: 'Savijanje',
+      text: 'Prava strelica sa vrhom iz brenda. Na prelaz mišem linija se savije u talas iz logotipa, a vrh se podigne gore-desno.',
+      ms: 650,
+      frame: (svg, p) => render(svg, mix(STRAIGHT, WAVE, back(p))),
+    },
+    {
+      name: 'Iscrtavanje',
+      text: 'Prava strelica odleti udesno, a zatim se talas iz logotipa iscrta od početka do vrha, kao da strelica „trči“ po liniji.',
+      ms: 900,
+      frame: (svg, p) => {
+        const out = ease(seg(p, 0, .3));
+        if (p < .3) render(svg, STRAIGHT, 1, `translate(${out * 60} 0)`, 1 - out);
+        else render(svg, WAVE, ease(seg(p, .3, 1)));
+      },
+    },
+    {
+      name: 'Skok',
+      text: 'Strelica postane skakaonica: linija se spusti pa naglo podigne, a cela strelica na kraju „poskoči“ gore-desno.',
+      ms: 750,
+      frame: (svg, p) => {
+        const m = ease(seg(p, 0, .65)), hop = Math.sin(seg(p, .6, 1) * Math.PI);
+        render(svg, mix(STRAIGHT, RAMP, m), 1, `translate(${hop * 6} ${-hop * 10})`);
+      },
+    },
+    {
+      name: 'Logo uvek',
+      text: 'Strelica je uvek blagi talas iz logotipa. Na prelaz mišem talas postane izraženiji i cela strelica se pomeri gore-desno.',
+      ms: 550,
+      frame: (svg, p) => render(svg, mix(CALM, WAVE, back(p)), 1, `translate(${p * 5} ${-p * 5})`),
+    },
+  ];
+
+  // Reversible tween: hover in plays forward, hover out plays back from wherever it is
+  const animator = (frame, ms) => {
+    let p = 0, target = 0, last = 0, raf = 0;
+    const tick = now => {
+      const dt = last ? now - last : 16; last = now;
+      p = target > p ? Math.min(target, p + dt / ms) : Math.max(target, p - dt / ms);
+      frame(p);
+      if (p !== target) raf = requestAnimationFrame(tick); else { raf = 0; last = 0; }
+    };
+    frame(0);
+    return t => { target = t; if (!raf) raf = requestAnimationFrame(tick); };
+  };
+
+  const BTNS = [['', 'Prijavi se'], ['white', 'Postani partner'], ['navy', 'Saznaj više']];
+  const root = document.getElementById('variants');
+  const all = [];
+
+  VARIANTS.forEach((v, i) => {
+    const sec = document.createElement('section');
+    sec.className = 'variant';
+    sec.innerHTML = `<h2><span class="n">0${i + 1}</span>${v.name}</h2><p>${v.text}</p>
+      <div class="rows"><div class="panel light"></div><div class="panel dark"></div></div>
+      <div class="rows" style="margin-top:14px"><div class="panel light big"></div><div class="panel dark big"></div></div>`;
+    const [light, dark, bigL, bigD] = sec.querySelectorAll('.panel');
+    const addBtn = (panel, cls, label) => {
+      const a = document.createElement('a');
+      a.className = `btn ${cls}`; a.href = '#'; a.onclick = e => e.preventDefault();
+      a.innerHTML = `<span class="btn-icon"></span><span class="btn-label">${label}</span>`;
+      const svg = makeSvg('ba');
+      a.querySelector('.btn-icon').append(svg);
+      const go = animator(p => v.frame(svg, p), v.ms);
+      a.addEventListener('mouseenter', () => go(1));
+      a.addEventListener('mouseleave', () => go(0));
+      a.addEventListener('touchstart', () => { go(1); setTimeout(() => go(0), v.ms + 500); }, { passive: true });
+      panel.append(a); all.push(go);
+    };
+    BTNS.forEach(([c, l]) => addBtn(light, c, l));
+    BTNS.forEach(([c, l]) => addBtn(dark, c === 'navy' ? 'turq' : c, c === 'navy' ? 'Saznaj više' : l));
+    // Big version to judge the shape itself
+    [bigL, bigD].forEach(panel => {
+      const svg = makeSvg('big-icon');
+      panel.append(svg);
+      const go = animator(p => v.frame(svg, p), v.ms);
+      panel.addEventListener('mouseenter', () => go(1));
+      panel.addEventListener('mouseleave', () => go(0));
+      all.push(go);
+    });
+    root.append(sec);
+  });
+
+  // Autoplay: everything plays forward and back on a loop (useful on phones)
+  let timer;
+  document.getElementById('autoplay').addEventListener('change', e => {
+    clearInterval(timer);
+    if (!e.target.checked) { all.forEach(go => go(0)); return; }
+    let on = false;
+    const flip = () => { on = !on; all.forEach(go => go(on ? 1 : 0)); };
+    flip(); timer = setInterval(flip, 1600);
+  });
+})();
+</script>
+</body>
+</html>

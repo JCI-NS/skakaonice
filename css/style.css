@@ -278,6 +278,14 @@ h3, .h3 { font-size: var(--h3); }
 .shape.s-ticket { border-radius: 28px; -webkit-mask: radial-gradient(circle 26px at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 26px at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat; mask: radial-gradient(circle 26px at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 26px at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat; }
 .shape.s-blob { border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; }
 .gallery-foot { margin-top: 44px; display: flex; justify-content: center; }
+/* Desktop: the pinned screen must fit heading + photos + button, so size by viewport height */
+@media (min-width: 761px) {
+  .gallery-pin { height: 100vh; min-height: 0; padding-block: clamp(72px, 10vh, 100px) clamp(24px, 4vh, 48px); }
+  .gallery .heading-wrap { margin-bottom: clamp(20px, 4vh, 56px); }
+  .gallery h2 { font-size: min(var(--h2), 8.5vh); }
+  .shape { width: auto; height: clamp(200px, 44vh, 420px); }
+  .gallery-foot { margin-top: clamp(20px, 4vh, 44px); }
+}
 @media (max-width: 760px) {
   .gallery-pin { min-height: 0; }
   .gallery-scroller { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }

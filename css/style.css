@@ -193,7 +193,7 @@ h3, .h3 { font-size: var(--h3); }
 .hero-meta div { display: flex; align-items: center; gap: 10px; }
 .hero-meta svg { width: 18px; height: 18px; color: var(--yellow); flex: none; }
 .hero-media { position: relative; z-index: 1; margin-top: clamp(-64px, -4vw, -24px); border-radius: var(--radius); overflow: hidden; aspect-ratio: 16 / 7.4; }
-.hero-media img { width: 100%; height: 100%; object-fit: cover; }
+.hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 62%; }
 .hero-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,15,41,.55) 0%, rgba(10,15,41,0) 32%, rgba(10,15,41,0) 62%, rgba(10,15,41,.55) 100%); }
 .countdown {
   position: absolute; left: 20px; bottom: 20px; z-index: 2;

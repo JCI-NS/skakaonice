@@ -53,47 +53,56 @@
   const STRAIGHT = line(10, 42, 76, 42);
   const WAVE = [[2.5,76],[5.5,62],[11,56],[18,56],[25,56],[30,60],[34,63],[38,66],[42,68.5],[47.5,68.5],[66,68.5],[80,40],[92,9]];
   const CALM = WAVE.map(([x, y]) => [x, 50 + (y - 50) * 0.4]);
-  const RAMP = [[4,20],[14,40],[24,62],[40,68],[52,72],[60,72],[66,70],[72,68],[76,64],[80,56],[84,48],[88,30],[92,9]];
-  const SW = 7; // stroke width in shape units
+  // Stroke width in shape units: the resting arrow is a bit heavier and thins into the logo line
+  const SW_REST = 9.5, SW_LOGO = 6.5;
   // Brand arrowhead (the notched chevron), in stroke-width units, pointing +x, shaft end at origin
   const HEAD = [[2,0],[0.35,1.67],[-1.1,1.67],[0.05,0.5],[0.05,-0.5],[-1.1,-1.67],[0.35,-1.67]];
 
   const lerp = (a, b, t) => a + (b - a) * t;
   const mix = (A, B, t) => A.map((p, i) => [lerp(p[0], B[i][0], t), lerp(p[1], B[i][1], t)]);
   const toD = P => `M${P[0]} C${P.slice(1).map(p => p.join(' ')).join(' ')}`;
-  const headPts = (x, y, ang) => HEAD.map(([u, v]) => {
+  const headPts = (x, y, ang, sw) => HEAD.map(([u, v]) => {
     const c = Math.cos(ang), s = Math.sin(ang);
-    return `${(x + (u * c - v * s) * SW).toFixed(2)},${(y + (u * s + v * c) * SW).toFixed(2)}`;
+    return `${(x + (u * c - v * s) * sw).toFixed(2)},${(y + (u * s + v * c) * sw).toFixed(2)}`;
   }).join(' ');
-  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  const back = t => { const c = 1.6; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+  // Ease-out only: the arrow flies in and stops, no overshoot or settle-back
+  const out = t => 1 - Math.pow(1 - t, 3);
   const seg = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+  const swAt = t => lerp(SW_REST, SW_LOGO, t);
+  // Staggered morph: each point starts at a different moment, so the bend travels along the line.
+  // dir = 1: from the tail to the arrowhead; dir = -1: from the arrowhead back to the tail.
+  const flow = (A, B, p, dir, spread = .45) => A.map((a, i) => {
+    const k = (dir > 0 ? i : 12 - i) / 12 * spread;
+    const t = out(seg(p, k, k + 1 - spread));
+    return [lerp(a[0], B[i][0], t), lerp(a[1], B[i][1], t)];
+  });
 
   const NS = 'http://www.w3.org/2000/svg';
   const makeSvg = cls => {
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', '-8 -14 116 102');
     svg.setAttribute('class', cls);
-    svg.innerHTML = `<g><path fill="none" stroke="currentColor" stroke-width="${SW}" stroke-linecap="round"/><polygon fill="currentColor"/></g>`;
+    svg.innerHTML = `<g><path fill="none" stroke="currentColor" stroke-linecap="round"/><polygon fill="currentColor"/></g>`;
     return svg;
   };
 
   // Draws the arrow: shape P, optional drawn fraction (0..1) for the "draw on" effect
-  const render = (svg, P, drawn = 1, gTransform = '', opacity = 1) => {
+  const render = (svg, P, sw, gTransform = '', drawn = 1, opacity = 1) => {
     const g = svg.querySelector('g'), path = g.querySelector('path'), head = g.querySelector('polygon');
     path.setAttribute('d', toD(P));
+    path.setAttribute('stroke-width', sw);
     g.setAttribute('transform', gTransform);
     g.style.opacity = opacity;
     if (drawn >= 1) {
       path.style.strokeDasharray = ''; path.style.strokeDashoffset = '';
       const a = P[11], b = P[12];
-      head.setAttribute('points', headPts(b[0], b[1], Math.atan2(b[1] - a[1], b[0] - a[0])));
+      head.setAttribute('points', headPts(b[0], b[1], Math.atan2(b[1] - a[1], b[0] - a[0]), sw));
       head.style.opacity = 1;
     } else {
       const L = path.getTotalLength(), l = L * drawn;
       path.style.strokeDasharray = `${l} ${L}`; path.style.strokeDashoffset = 0;
       const p = path.getPointAtLength(l), q = path.getPointAtLength(Math.max(0, l - 1));
-      head.setAttribute('points', headPts(p.x, p.y, Math.atan2(p.y - q.y, p.x - q.x)));
+      head.setAttribute('points', headPts(p.x, p.y, Math.atan2(p.y - q.y, p.x - q.x), sw));
       head.style.opacity = drawn > 0.02 ? 1 : 0;
     }
   };
@@ -102,34 +111,33 @@
   const VARIANTS = [
     {
       name: 'Savijanje',
-      text: 'Prava strelica sa vrhom iz brenda. Na prelaz mišem linija se savije u talas iz logotipa, a vrh se podigne gore-desno.',
-      ms: 650,
-      frame: (svg, p) => render(svg, mix(STRAIGHT, WAVE, back(p))),
+      text: 'Kao prva varijanta, ali čisto: strelica se savije u talas iz logotipa i stane, bez odskakanja. Kraće traje, a linija se tokom savijanja stanji do debljine iz logotipa.',
+      ms: 360,
+      frame: (svg, p) => { const t = out(p); render(svg, mix(STRAIGHT, WAVE, t), swAt(t)); },
     },
     {
-      name: 'Iscrtavanje',
-      text: 'Prava strelica odleti udesno, a zatim se talas iz logotipa iscrta od početka do vrha, kao da strelica „trči“ po liniji.',
-      ms: 900,
-      frame: (svg, p) => {
-        const out = ease(seg(p, 0, .3));
-        if (p < .3) render(svg, STRAIGHT, 1, `translate(${out * 60} 0)`, 1 - out);
-        else render(svg, WAVE, ease(seg(p, .3, 1)));
-      },
+      name: 'Talas ka vrhu',
+      text: 'Ono što ti se svidelo u drugoj varijanti, bez strelice koja odlazi: postojeća strelica se savija od početka linije ka vrhu, pa talas „proteče“ kroz nju i vrh se poslednji podigne.',
+      ms: 420,
+      frame: (svg, p) => render(svg, flow(STRAIGHT, WAVE, p, 1), swAt(out(p))),
     },
     {
-      name: 'Skok',
-      text: 'Strelica postane skakaonica: linija se spusti pa naglo podigne, a cela strelica na kraju „poskoči“ gore-desno.',
-      ms: 750,
-      frame: (svg, p) => {
-        const m = ease(seg(p, 0, .65)), hop = Math.sin(seg(p, .6, 1) * Math.PI);
-        render(svg, mix(STRAIGHT, RAMP, m), 1, `translate(${hop * 6} ${-hop * 10})`);
-      },
+      name: 'Vrh vodi',
+      text: 'Obrnuto od prethodne: prvo se vrh podigne gore-desno, a linija ga prati i savije se u talas.',
+      ms: 420,
+      frame: (svg, p) => render(svg, flow(STRAIGHT, WAVE, p, -1), swAt(out(p))),
     },
     {
       name: 'Logo uvek',
-      text: 'Strelica je uvek blagi talas iz logotipa. Na prelaz mišem talas postane izraženiji i cela strelica se pomeri gore-desno.',
-      ms: 550,
-      frame: (svg, p) => render(svg, mix(CALM, WAVE, back(p)), 1, `translate(${p * 5} ${-p * 5})`),
+      text: 'Strelica je stalno blagi talas iz logotipa. Na prelaz mišem talas se izdigne i strelica se pomeri gore-desno, pa stane. Bez vraćanja na kraju.',
+      ms: 320,
+      frame: (svg, p) => { const t = out(p); render(svg, mix(CALM, WAVE, t), swAt(.5 + t / 2), `translate(${t * 4} ${-t * 4})`); },
+    },
+    {
+      name: 'Logo uvek + talas ka vrhu',
+      text: 'Spoj četvrte i druge: u mirovanju blagi talas, a na prelaz mišem talas proteče od početka linije ka vrhu.',
+      ms: 380,
+      frame: (svg, p) => render(svg, flow(CALM, WAVE, p, 1), swAt(.5 + out(p) / 2)),
     },
   ];
 

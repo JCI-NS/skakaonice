@@ -26,15 +26,17 @@
      The HTML already holds the resting frame, so nothing jumps before this script runs. */
   const WAVE = 'M2.5 76C5.5 62 11 56 18 56C25 56 30 60 34 63C38 66 42 68.5 47.5 68.5C66 68.5 80 40 92 9';
   const ARROW_HEAD = [[2, 0], [.35, 1.67], [-1.1, 1.67], [.05, .5], [.05, -.5], [-1.1, -1.67], [.35, -1.67]]; // in stroke widths
-  const REST_DRAWN = .2, REST_SCALE = 1.7, REST_SHIFT = [22.8, -66.7], SW_REST = 8, SW_LOGO = 6, ARROW_MS = 420;
+  const REST_DRAWN = .2, REST_SCALE = 1.7, REST_SHIFT = [22.8, -66.7], SW_REST = 8, SW_LOGO = 6;
+  // Hover-in runs a touch longer than the label shift; hover-out matches the label's .35s exactly
+  const ARROW_IN_MS = 380, ARROW_OUT_MS = 350;
   const lerp = (a, b, t) => a + (b - a) * t;
   document.querySelectorAll('.btn svg.ba').forEach(svg => {
     const g = svg.querySelector('g'), path = g.querySelector('path'), head = g.querySelector('polygon');
     path.setAttribute('d', WAVE);
     const total = path.getTotalLength();
-    const draw = p => {
-      // The view pulls back faster than the head travels, so the head never leaves the tile
-      const z = 1 - Math.pow(1 - p, 5), d = 1 - Math.pow(1 - p, 2), sc = lerp(REST_SCALE, 1, z);
+    // z = how far the view has pulled back, d = how much of the logo line is drawn (both 0..1)
+    const draw = (z, d) => {
+      const sc = lerp(REST_SCALE, 1, z);
       const sw = lerp(SW_REST, SW_LOGO, z) / sc, len = total * lerp(REST_DRAWN, 1, d);
       g.setAttribute('transform', `translate(${lerp(REST_SHIFT[0], 0, z)} ${lerp(REST_SHIFT[1], 0, z)}) scale(${sc})`);
       path.setAttribute('stroke-width', sw);
@@ -44,24 +46,36 @@
       head.setAttribute('points', ARROW_HEAD.map(([u, v]) =>
         `${(tip.x + (u * c - v * s) * sw).toFixed(2)},${(tip.y + (u * s + v * c) * sw).toFixed(2)}`).join(' '));
     };
-    // Reversible tween: hovering plays forward, leaving plays back from wherever it is
-    let p = 0, target = 0, last = 0, raf = 0;
-    const tick = now => {
-      const dt = last ? now - last : 16; last = now;
-      p = target > p ? Math.min(target, p + dt / ARROW_MS) : Math.max(target, p - dt / ARROW_MS);
-      draw(p);
-      if (p !== target) raf = requestAnimationFrame(tick); else { raf = 0; last = 0; }
+    // Each hover change starts a new tween from wherever the arrow is now.
+    // In: the view pulls back faster than the head travels, so the head never leaves the tile.
+    // Out: both ease back together on the same curve as the label.
+    let z = 0, d = 0, raf = 0;
+    const go = forward => {
+      cancelAnimationFrame(raf);
+      const z0 = z, d0 = d, ms = forward ? ARROW_IN_MS : ARROW_OUT_MS;
+      if (reduceMotion) { z = d = forward ? 1 : 0; draw(z, d); return; }
+      let start = 0;
+      const tick = now => {
+        if (!start) start = now;
+        const u = Math.min(1, (now - start) / ms);
+        if (forward) {
+          z = z0 + (1 - z0) * (1 - Math.pow(1 - u, 5));
+          d = d0 + (1 - d0) * (1 - Math.pow(1 - u, 2));
+        } else {
+          const k = Math.pow(1 - u, 4);
+          z = z0 * k; d = d0 * k;
+        }
+        draw(z, d);
+        if (u < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
     };
-    const go = t => {
-      if (reduceMotion) { p = target = t; draw(p); return; }
-      target = t; if (!raf) raf = requestAnimationFrame(tick);
-    };
-    draw(0);
+    draw(0, 0);
     const btn = svg.closest('.btn');
-    btn.addEventListener('mouseenter', () => go(1));
-    btn.addEventListener('mouseleave', () => go(0));
-    btn.addEventListener('focus', () => go(1));
-    btn.addEventListener('blur', () => go(0));
+    btn.addEventListener('mouseenter', () => go(true));
+    btn.addEventListener('mouseleave', () => go(false));
+    btn.addEventListener('focus', () => go(true));
+    btn.addEventListener('blur', () => go(false));
   });
 
   /* ---------- Nav background + hide on scroll down ---------- */

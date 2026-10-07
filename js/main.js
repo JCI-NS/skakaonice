@@ -112,7 +112,7 @@
   // so small (mobile) headlines are only grazed, not covered.
   const STICKER_OVERLAP = 0.38, CAP_OVERLAP = 0.16;
   const placeStickers = () => {
-    document.querySelectorAll('.sticker').forEach(s => {
+    document.querySelectorAll('.sticker:not(.flat)').forEach(s => {
       const host = s.offsetParent;
       const h = s.parentElement.querySelector('h1, h2, h3, .display');
       if (!host || !h) return;
@@ -126,7 +126,11 @@
       const halfLeading = (lh - (ascent + descent)) / 2;
       const capTopInLine = halfLeading + ascent - m.actualBoundingBoxAscent;
       const hTop = h.getBoundingClientRect().top - host.getBoundingClientRect().top + parseFloat(cs.paddingTop);
-      const overlap = Math.min(s.offsetHeight * STICKER_OVERLAP, m.actualBoundingBoxAscent * CAP_OVERLAP);
+      // data-overlap overrides the default with a fraction of the sticker height (0 = rests on the letters).
+      const custom = parseFloat(s.dataset.overlap);
+      const overlap = Number.isNaN(custom)
+        ? Math.min(s.offsetHeight * STICKER_OVERLAP, m.actualBoundingBoxAscent * CAP_OVERLAP)
+        : s.offsetHeight * custom;
       s.style.top = `${hTop + capTopInLine - s.offsetHeight + overlap}px`;
     });
   };

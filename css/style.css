@@ -225,7 +225,7 @@ h3, .h3 { font-size: var(--h3); }
 
 /* ---------- Scroll-fill statement with floating photos ---------- */
 .statement { position: relative; text-align: center; padding-block: clamp(120px, 14vw, 240px); overflow: hidden; }
-.statement .sticker { left: 34%; }
+.statement .sticker { left: 22%; }
 .statement .fill-text { position: relative; z-index: 2; max-width: 22ch; margin-inline: auto; font-size: clamp(2rem, 1rem + 3.6vw, 4.4rem); line-height: 1.04; }
 .statement .btn-row { justify-content: center; margin-top: 44px; position: relative; z-index: 2; }
 .floaters { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
@@ -316,6 +316,9 @@ h3, .h3 { font-size: var(--h3); }
 .split-side { position: sticky; top: 120px; }
 .split-side .heading { margin-bottom: 28px; }
 .split-side .sticker { left: 0; transform: translateX(-6%) rotate(-12deg); }
+/* Flat sticker: sits straight above the headline instead of tilted over it */
+.heading .sticker.flat { position: static; display: block; width: fit-content; margin: 0 auto 20px; transform: none; }
+.split-side .heading .sticker.flat { margin-left: 0; }
 .split-img { margin-top: 40px; border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 3; }
 .split-img img { width: 100%; height: 100%; object-fit: cover; }
 @media (max-width: 900px) { .split { grid-template-columns: 1fr; } .split-side { position: static; } }

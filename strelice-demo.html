@@ -76,8 +76,10 @@
   const swAt = t => lerp(SW_REST, SW_LOGO, t);
   // Staggered morph: each point starts at a different moment, so the bend travels along the line.
   // dir = 1: from the tail to the arrowhead; dir = -1: from the arrowhead back to the tail.
+  // Control points move together with their anchor point, so the line stays smooth at the joints.
   const flow = (A, B, p, dir, spread = .45) => A.map((a, i) => {
-    const k = (dir > 0 ? i : 12 - i) / 12 * spread;
+    const anchor = Math.round(i / 3) * 3;
+    const k = (dir > 0 ? anchor : 12 - anchor) / 12 * spread;
     const t = out(seg(p, k, k + 1 - spread));
     return [lerp(a[0], B[i][0], t), lerp(a[1], B[i][1], t)];
   });
@@ -113,16 +115,17 @@
   };
 
   // ---- The variants: each maps hover progress p (0 = rest, 1 = hovered) to a frame ----
-  // Lengthen + bend: the short arrow grows into the full logo arrow and settles slightly up-right
+  // Head leads: the arrowhead sets off toward its final spot first and the line follows behind it,
+  // so the arrow stretches toward its destination instead of zooming from the center.
   const grow = (from, ms) => ({
     ms,
-    frame: (svg, p) => { const t = out(p); render(svg, mix(from, WAVE, t), swAt(t), `translate(${t * 3} ${-t * 3})`); },
+    frame: (svg, p) => render(svg, flow(from, WAVE, p, -1, .3), swAt(out(p))),
   });
   const VARIANTS = [
     { name: 'Trenutna strelica (za poređenje)', text: 'Ovako dugmad izgledaju danas na sajtu.', current: true },
-    { name: 'Kratka prava → logo', text: 'U mirovanju kratka prava strelica, iste veličine kao današnja, ali sa vrhom iz brenda. Na prelaz mišem se izduži i savije u strelicu iz logotipa.', ...grow(SHORT_STRAIGHT, 340) },
-    { name: 'Kratki talas → logo', text: 'U mirovanju umanjena strelica iz logotipa sa blagim talasom, iste veličine kao današnja. Na prelaz mišem se izduži i talas se izdigne do punog logotipa.', ...grow(SHORT_WAVE, 340) },
-    { name: 'Kratka uzlazna → logo', text: 'U mirovanju kratka strelica koja se blago penje udesno, kao kraj strelice iz logotipa. Na prelaz mišem se izduži i dobije ceo talas.', ...grow(SHORT_RISE, 340) },
+    { name: 'Kratka prava → logo', text: 'U mirovanju kratka prava strelica, iste veličine kao današnja, ali sa vrhom iz brenda. Na prelaz mišem vrh krene prvi ka gore-desno, a linija ga prati i izduži se u strelicu iz logotipa.', ...grow(SHORT_STRAIGHT, 380) },
+    { name: 'Kratki talas → logo', text: 'U mirovanju umanjena strelica iz logotipa sa blagim talasom, iste veličine kao današnja. Na prelaz mišem vrh krene prvi, a talas se izduži za njim do punog logotipa.', ...grow(SHORT_WAVE, 380) },
+    { name: 'Kratka uzlazna → logo', text: 'U mirovanju kratka strelica koja se blago penje udesno, kao kraj strelice iz logotipa. Na prelaz mišem vrh krene prvi, a linija se izduži za njim i dobije ceo talas.', ...grow(SHORT_RISE, 380) },
   ];
 
   // Reversible tween: hover in plays forward, hover out plays back from wherever it is

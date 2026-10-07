@@ -108,9 +108,9 @@
      The cap-letter top is computed from the font's real metrics, so the overlap is the same
      for every headline size and screen width. */
   const measureCtx = document.createElement('canvas').getContext('2d');
-  // Overlap = the smaller of 38% of the sticker or 16% of the capital-letter height,
-  // so small (mobile) headlines are only grazed, not covered.
-  const STICKER_OVERLAP = 0.38, CAP_OVERLAP = 0.16;
+  // Default overlap as a fraction of the sticker height. Negative lifts the sticker so only
+  // its tilted corner grazes the headline.
+  const DEFAULT_OVERLAP = -0.1;
   const placeStickers = () => {
     document.querySelectorAll('.sticker:not(.flat)').forEach(s => {
       const host = s.offsetParent;
@@ -129,7 +129,7 @@
       // data-overlap overrides the default with a fraction of the sticker height (0 = rests on the letters).
       const custom = parseFloat(s.dataset.overlap);
       const overlap = Number.isNaN(custom)
-        ? Math.min(s.offsetHeight * STICKER_OVERLAP, m.actualBoundingBoxAscent * CAP_OVERLAP)
+        ? s.offsetHeight * DEFAULT_OVERLAP
         : s.offsetHeight * custom;
       s.style.top = `${hTop + capTopInLine - s.offsetHeight + overlap}px`;
     });

@@ -147,12 +147,8 @@
   }
 
   /* ---------- Contact form: sends straight to our inbox through FormSubmit (formsubmit.co) ----------
-     A topic option can send to its own address (data-to); ?tema=<data-key> preselects a topic.
-     Each address is activated once: the first send emails an "Activate Form" link to that inbox. */
+     The address is activated once: the first send emails an "Activate Form" link to that inbox. */
   document.querySelectorAll('[data-contact-form]').forEach(form => {
-    const key = new URLSearchParams(location.search).get('tema');
-    const preset = key && form.querySelector(`option[data-key="${CSS.escape(key)}"]`);
-    if (preset) preset.selected = true;
     const status = form.querySelector('.form-status');
     const button = form.querySelector('button[type="submit"]');
     const setStatus = (text, cls = '') => { status.textContent = text; status.className = `note form-status ${cls}`; };
@@ -160,7 +156,7 @@
       e.preventDefault();
       const f = new FormData(form);
       if (f.get('_honey')) return; // filled only by spam bots
-      const to = form.querySelector('select[name="tema"]')?.selectedOptions[0]?.dataset.to || form.dataset.contactForm;
+      const to = form.dataset.contactForm;
       button.disabled = true;
       setStatus('Šaljem…');
       try {
@@ -170,9 +166,8 @@
           body: JSON.stringify({
             'Ime i prezime': f.get('ime'),
             email: f.get('email'),
-            Tema: f.get('tema'),
             Poruka: f.get('poruka'),
-            _subject: `[Skakaonice] ${f.get('tema')} – ${f.get('ime')}`,
+            _subject: `[Skakaonice] Poruka – ${f.get('ime')}`,
             _template: 'table',
             _captcha: 'false'
           })
@@ -224,7 +219,7 @@
   let stickerTimer;
   window.addEventListener('resize', () => { clearTimeout(stickerTimer); stickerTimer = setTimeout(placeStickers, 120); });
 
-  /* ---------- Placeholder buttons ("Prijave uskoro") ---------- */
+  /* ---------- Placeholder buttons (aria-disabled) ---------- */
   document.querySelectorAll('[aria-disabled="true"]').forEach(b => b.addEventListener('click', e => e.preventDefault()));
 
   if (!hasGsap || reduceMotion) return;

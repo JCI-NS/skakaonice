@@ -427,6 +427,7 @@ h3, .h3 { font-size: var(--h3); }
 .prose { max-width: 66ch; }
 .prose p { margin: 0 0 1.1em; }
 .prose h2 { font-size: var(--h4); margin: 2em 0 .6em; }
+.prose h3 { font-size: 1rem; margin: 1.4em 0 .4em; color: var(--turq); text-transform: uppercase; letter-spacing: .06em; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 96px); align-items: center; }
 @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
 .rounded-img { border-radius: var(--radius); overflow: hidden; }
@@ -595,3 +596,9 @@ h3, .h3 { font-size: var(--h3); }
 .form .form-status.ok { color: var(--teal, #56bda3); }
 .form .form-status.err { color: var(--yellow, #edbe38); }
 .form button[disabled] { opacity: .6; cursor: progress; }
+
+/* Podrži: payment details and button inside a card */
+.card p + p { margin-top: 12px; }
+.card .pay { line-height: 1.6; }
+.turq .card .pay strong { color: var(--white); }
+.card .btn { margin-top: 22px; }

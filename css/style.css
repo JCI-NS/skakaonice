@@ -616,3 +616,8 @@ h3, .h3 { font-size: var(--h3); }
   .way-pay .pay { padding-left: 0; border-left: 0; }
   .card .pay-qr { align-items: flex-start; text-align: left; }
 }
+
+/* Učestvuj: embedded Luma registration */
+.luma-embed { border-radius: var(--radius); overflow: hidden; background: #fff; border: 1px solid #e3e6ef; box-shadow: 0 10px 30px rgba(10,15,41,.08); }
+.luma-embed iframe { display: block; width: 100%; height: 730px; border: 0; }
+@media (max-width: 520px) { .luma-embed iframe { height: 780px; } }

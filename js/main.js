@@ -279,7 +279,8 @@
       gsap.from(heroImg, { scale: 1.15, duration: 1.6, ease: 'power3.out' });
       gsap.to(heroImg, { yPercent: 10, ease: 'none', scrollTrigger: { trigger: '.hero-media', start: 'top top', end: 'bottom top', scrub: true } });
     }
-    gsap.from('.hero .sticker', { scale: 0, rotate: -40, duration: .8, delay: .5, ease: 'back.out(2)' });
+    const heroSticker = document.querySelector('.hero .sticker');
+    if (heroSticker) gsap.from(heroSticker, { scale: 0, rotate: -40, duration: .8, delay: .5, ease: 'back.out(2)' });
 
     // Stickers pop in when their heading enters
     gsap.utils.toArray('.heading .sticker, .page-hero .sticker').forEach(s => {

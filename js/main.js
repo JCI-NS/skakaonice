@@ -116,6 +116,12 @@
       });
       window.ScrollTrigger?.refresh();
     }));
+    // agenda: open the tab for today's date (event days) or the one named in the URL hash
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const pick = [...tabs].find(t => location.hash && t.getAttribute('aria-controls') === location.hash.slice(1))
+      || [...tabs].find(t => t.dataset.date === today);
+    if (pick && pick.getAttribute('aria-selected') !== 'true') pick.click();
   });
   // only one FAQ item open at a time within a list
   document.querySelectorAll('.faq-panel').forEach(panel => {

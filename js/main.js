@@ -122,6 +122,8 @@
     const pick = [...tabs].find(t => location.hash && t.getAttribute('aria-controls') === location.hash.slice(1))
       || [...tabs].find(t => t.dataset.date === today);
     if (pick && pick.getAttribute('aria-selected') !== 'true') pick.click();
+    // links elsewhere on the page that should open a given day tab (e.g. day cards)
+    tabs.forEach(t => document.querySelectorAll(`a[data-tab="${t.id}"]`).forEach(a => a.addEventListener('click', () => t.click())));
   });
   // only one FAQ item open at a time within a list
   document.querySelectorAll('.faq-panel').forEach(panel => {

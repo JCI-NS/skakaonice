@@ -733,7 +733,4 @@ h3, .h3 { font-size: var(--h3); }
 @media (max-width: 1100px) { .spk-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .spk-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .spk-body { padding: 12px 12px 14px; } .spk-role { font-size: 13px; } .spk-talk { font-size: 14px; } }
 @media (max-width: 380px) { .spk-grid { grid-template-columns: 1fr; } }
-/* Homepage Predavači row: speaker tiles ride the same pinned track as the Galerija shapes */
-.gallery-track .tile { flex: none; width: clamp(220px, 22vw, 320px); aspect-ratio: 3 / 4; border-radius: var(--radius); }
-@media (min-width: 761px) { .gallery-track .tile { width: auto; height: clamp(200px, 44vh, 420px); } }
-@media (max-width: 760px) { .gallery-track .tile { width: 62vw; scroll-snap-align: center; } }
+@media (max-width: 520px) { .tiles.cols-3.spk-teaser { grid-template-columns: repeat(2, 1fr); } .tiles.cols-3.spk-teaser .tile { aspect-ratio: 3 / 4; } }

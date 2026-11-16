@@ -651,6 +651,7 @@ h3, .h3 { font-size: var(--h3); }
 .tl-break { margin: 0; font-size: 15px; line-height: 24px; color: #6b7090; }
 .tl-note { margin: 8px 0 0; font-size: 14.5px; }
 .tl-note a { white-space: nowrap; font-weight: 700; text-decoration: underline; text-decoration-color: var(--turq); text-underline-offset: 4px; }
+.tl-who a { text-decoration: underline; text-decoration-color: var(--turq); text-underline-offset: 4px; }
 @media (max-width: 560px) {
   .tl-item { grid-template-columns: 1fr; }
   .tl-time:empty { display: none; }

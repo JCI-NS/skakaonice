@@ -322,15 +322,17 @@
     // Gallery: pin the section and slide the track sideways (desktop); native swipe on mobile
     const mm = gsap.matchMedia();
     mm.add('(min-width: 761px)', () => {
-      const pin = document.querySelector('.gallery-pin');
-      const track = document.querySelector('.gallery-track');
-      if (!pin || !track) return;
-      const dist = () => Math.max(0, track.scrollWidth - window.innerWidth);
-      gsap.to(track, {
-        x: () => -dist(), ease: 'none',
-        scrollTrigger: { trigger: pin, start: 'top top', end: () => '+=' + dist(), pin: true, scrub: 1, invalidateOnRefresh: true },
+      // every pinned horizontal row on the page (Predavači + Galerija on the homepage)
+      document.querySelectorAll('.gallery-pin').forEach(pin => {
+        const track = pin.querySelector('.gallery-track');
+        if (!track) return;
+        const dist = () => Math.max(0, track.scrollWidth - window.innerWidth);
+        gsap.to(track, {
+          x: () => -dist(), ease: 'none',
+          scrollTrigger: { trigger: pin, start: 'top top', end: () => '+=' + dist(), pin: true, scrub: 1, invalidateOnRefresh: true },
+        });
+        gsap.from(track.children, { y: 80, scale: .9, autoAlpha: 0, stagger: .08, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: pin, start: 'top 70%', once: true } });
       });
-      gsap.from(track.children, { y: 80, scale: .9, autoAlpha: 0, stagger: .08, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: pin, start: 'top 70%', once: true } });
     });
 
     // Agenda steps highlight as they pass the middle of the screen

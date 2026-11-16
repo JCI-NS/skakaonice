@@ -715,8 +715,6 @@ h3, .h3 { font-size: var(--h3); }
 .spk-photo { aspect-ratio: 4 / 5; overflow: hidden; background: var(--navy-3); }
 .spk-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
 .spk:hover .spk-photo img { transform: scale(1.04); }
-.spk-mark { display: grid; place-items: center; background: var(--turq); color: var(--navy); }
-.spk-mark span { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.2rem, 1.4rem + 3vw, 3.6rem); letter-spacing: -.02em; }
 .spk-body { padding: 16px 18px 18px; }
 .spk-name { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(1.05rem, .95rem + .4vw, 1.3rem); line-height: 1.1; margin: 0 0 6px; }
 .spk-role { margin: 0 0 12px; font-size: 14px; line-height: 1.4; opacity: .7; }
